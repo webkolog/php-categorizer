@@ -166,8 +166,7 @@ echo implode(" &raquo; ", $pathParts);
 echo "\n";
 ```
 ### Generating a Select Dropdown with Indentation
-You can easily create a HTML <select> dropdown with indented options to represent the category hierarchy, using the "depth" and "selected" information from $treeList.
-xxx
+You can easily create a HTML `<select>` dropdown with indented options to represent the category hierarchy, using the "depth" and "selected" information from $treeList.
 ```php
 echo "<select>\n";
 echo "<option value=\"0\">-- Select Category --</option>\n";
@@ -180,7 +179,6 @@ foreach ($nestedCat->treeList as $category) {
 }
 echo "</select>\n";
 ```
-
 ## Example Usage
 ```php
 <?php
