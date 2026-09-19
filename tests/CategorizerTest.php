@@ -8,26 +8,30 @@ class CategorizerTest extends TestCase
 {
     private static $db;
 
-    public static function setUpBeforeClass()
+    protected function setUp()
     {
-        $host = getenv('DB_HOST') ? getenv('DB_HOST') : '127.0.0.1';
-        $port = getenv('DB_PORT') ? getenv('DB_PORT') : '3306';
-        $dbname = getenv('DB_NAME') ? getenv('DB_NAME') : 'test_db';
-        $user = getenv('DB_USER') ? getenv('DB_USER') : 'root';
-        $pass = getenv('DB_PASS') ? getenv('DB_PASS') : 'root';
+        parent::setUp();
 
-        self::$db = new PDO("mysql:host={$host};port={$port};dbname={$dbname};charset=utf8", $user, $pass);
-        self::$db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        if (self::$db === null) {
+            $host = getenv('DB_HOST') ? getenv('DB_HOST') : '127.0.0.1';
+            $port = getenv('DB_PORT') ? getenv('DB_PORT') : '3306';
+            $dbname = getenv('DB_NAME') ? getenv('DB_NAME') : 'test_db';
+            $user = getenv('DB_USER') ? getenv('DB_USER') : 'root';
+            $pass = getenv('DB_PASS') ? getenv('DB_PASS') : 'root';
 
-        // Test tablosunu oluştur
-        self::$db->exec("CREATE TABLE IF NOT EXISTS categories (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            parent_id INT DEFAULT 0,
-            category_name VARCHAR(255) NOT NULL,
-            sort_order INT DEFAULT 0
-        )");
+            self::$db = new PDO("mysql:host={$host};port={$port};dbname={$dbname};charset=utf8", $user, $pass);
+            self::$db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-        // Örnek verileri temizle ve ekle
+            // Tabloyu oluştur
+            self::$db->exec("CREATE TABLE IF NOT EXISTS categories (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                parent_id INT DEFAULT 0,
+                category_name VARCHAR(255) NOT NULL,
+                sort_order INT DEFAULT 0
+            )");
+        }
+
+        // Örnek verileri her test öncesi sıfırla
         self::$db->exec("TRUNCATE TABLE categories");
         self::$db->exec("INSERT INTO categories (id, parent_id, category_name, sort_order) VALUES
             (1, 0, 'Electronics', 1),
@@ -56,7 +60,7 @@ class CategorizerTest extends TestCase
         $this->assertEquals(1, $categorizer->treeList[1]['depth']); // Laptops
         $this->assertEquals(2, $categorizer->treeList[2]['depth']); // Gaming Laptops
 
-        // 2. Ekmek Kırıntısı / Yol (Breadcrumb) Kontrolleri
+        // 2. Yol (Breadcrumb) Kontrolleri
         $this->assertCount(3, $categorizer->nestedList);
         $this->assertEquals('Electronics', $categorizer->nestedList[0]['name']);
         $this->assertEquals('Laptops', $categorizer->nestedList[1]['name']);
