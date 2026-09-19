@@ -8,18 +8,18 @@ class CategorizerTest extends TestCase
 {
     private static $db;
 
-    public static function setUpBeforeClass(): void
+    public static function setUpBeforeClass()
     {
-        $host = getenv('DB_HOST') ?: '127.0.0.1';
-        $port = getenv('DB_PORT') ?: '3306';
-        $dbname = getenv('DB_NAME') ?: 'test_db';
-        $user = getenv('DB_USER') ?: 'root';
-        $pass = getenv('DB_PASS') ?: 'root';
+        $host = getenv('DB_HOST') ? getenv('DB_HOST') : '127.0.0.1';
+        $port = getenv('DB_PORT') ? getenv('DB_PORT') : '3306';
+        $dbname = getenv('DB_NAME') ? getenv('DB_NAME') : 'test_db';
+        $user = getenv('DB_USER') ? getenv('DB_USER') : 'root';
+        $pass = getenv('DB_PASS') ? getenv('DB_PASS') : 'root';
 
         self::$db = new PDO("mysql:host={$host};port={$port};dbname={$dbname};charset=utf8", $user, $pass);
         self::$db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-        // Setup test table schema
+        // Test tablosunu oluştur
         self::$db->exec("CREATE TABLE IF NOT EXISTS categories (
             id INT AUTO_INCREMENT PRIMARY KEY,
             parent_id INT DEFAULT 0,
@@ -27,7 +27,7 @@ class CategorizerTest extends TestCase
             sort_order INT DEFAULT 0
         )");
 
-        // Insert sample data
+        // Örnek verileri temizle ve ekle
         self::$db->exec("TRUNCATE TABLE categories");
         self::$db->exec("INSERT INTO categories (id, parent_id, category_name, sort_order) VALUES
             (1, 0, 'Electronics', 1),
@@ -50,13 +50,13 @@ class CategorizerTest extends TestCase
 
         $categorizer->makeCategorize();
 
-        // 1. Verify Tree List Count & Depth
+        // 1. Ağaç Listesi Kontrolleri
         $this->assertCount(4, $categorizer->treeList);
         $this->assertEquals(0, $categorizer->treeList[0]['depth']); // Electronics
         $this->assertEquals(1, $categorizer->treeList[1]['depth']); // Laptops
         $this->assertEquals(2, $categorizer->treeList[2]['depth']); // Gaming Laptops
 
-        // 2. Verify Breadcrumb / Nested Path (Root -> Selected)
+        // 2. Ekmek Kırıntısı / Yol (Breadcrumb) Kontrolleri
         $this->assertCount(3, $categorizer->nestedList);
         $this->assertEquals('Electronics', $categorizer->nestedList[0]['name']);
         $this->assertEquals('Laptops', $categorizer->nestedList[1]['name']);
